@@ -2,10 +2,6 @@
 """
 3x3 MATRIX OPERATIONS - WITHOUT NUMPY
 GUI: Tkinter
-Run: python matrix_gui.py
-
-This program performs matrix operations using
-pure Python lists, loops, and mathematical formulas.
 
 Operations:
 1. Addition
@@ -19,140 +15,212 @@ Operations:
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-
-# Matrix size (3 rows and 3 columns)
+# Matrix size
 SIZE = 3
 
 
-# --------------------------------------------------
-# MATRIX FUNCTIONS (WITHOUT NUMPY)
-# --------------------------------------------------
+# ==========================================
+# 1. READ MATRIX VALUES
+# Get values from the Tkinter input boxes and convert them into a Python matrix.
+# ==========================================
 
 def read_matrix(entries):
-    """Read values from GUI input boxes and create a 3x3 matrix."""
 
     matrix = []
 
     for row in entries:
+
         matrix_row = []
 
         for entry in row:
+
             value = entry.get().strip()
 
-            if not value:
-                raise ValueError("Please fill in all nine matrix cells.")
+            if value == "":
+                raise ValueError("Please fill all matrix cells.")
 
             try:
-                matrix_row.append(float(value))
+                number = float(value)
             except ValueError:
-                raise ValueError("Please enter valid numeric values.")
+                raise ValueError("Please enter numbers only.")
+
+            matrix_row.append(number)
 
         matrix.append(matrix_row)
 
     return matrix
 
 
+# ==========================================
+# 2. MATRIX ADDITION
+# ==========================================
+
 def add_matrices(a, b):
-    """Add two matrices element by element."""
 
-    return [
-        [a[i][j] + b[i][j] for j in range(SIZE)]
-        for i in range(SIZE)
-    ]
-
-
-def subtract_matrices(a, b):
-    """Subtract matrix B from matrix A."""
-
-    return [
-        [a[i][j] - b[i][j] for j in range(SIZE)]
-        for i in range(SIZE)
-    ]
-
-
-def multiply_matrices(a, b):
-    """Multiply two matrices using row-by-column multiplication."""
-
-    result = [[0.0 for _ in range(SIZE)] for _ in range(SIZE)]
+    result = []
 
     for i in range(SIZE):
+
+        row = []
+
         for j in range(SIZE):
-            for k in range(SIZE):
-                result[i][j] += a[i][k] * b[k][j]
+
+            row.append(a[i][j] + b[i][j])
+
+        result.append(row)
 
     return result
 
 
+# ==========================================
+# 3. MATRIX SUBTRACTION
+# ==========================================
+
+def subtract_matrices(a, b):
+
+    result = []
+
+    for i in range(SIZE):
+
+        row = []
+
+        for j in range(SIZE):
+
+            row.append(a[i][j] - b[i][j])
+
+        result.append(row)
+
+    return result
+
+
+# ==========================================
+# 4. MATRIX MULTIPLICATION
+# ==========================================
+
+def multiply_matrices(a, b):
+
+    result = []
+
+    for i in range(SIZE):
+
+        row = []
+
+        for j in range(SIZE):
+
+            total = 0
+
+            for k in range(SIZE):
+
+                total = total + a[i][k] * b[k][j]
+
+            row.append(total)
+
+        result.append(row)
+
+    return result
+
+
+# ==========================================
+# 5. MATRIX TRANSPOSE
+# ==========================================
+
 def transpose_matrix(a):
-    """Convert rows into columns and columns into rows."""
 
-    return [
-        [a[j][i] for j in range(SIZE)]
-        for i in range(SIZE)
-    ]
+    result = []
 
+    for i in range(SIZE):
+
+        row = []
+
+        for j in range(SIZE):
+
+            row.append(a[j][i])
+
+        result.append(row)
+
+    return result
+
+
+# ==========================================
+# 6. DETERMINANT
+# ==========================================
 
 def determinant(a):
-    """Calculate the determinant of a 3x3 matrix."""
 
-    return (
+    det = (
         a[0][0] * (a[1][1] * a[2][2] - a[1][2] * a[2][1])
         - a[0][1] * (a[1][0] * a[2][2] - a[1][2] * a[2][0])
         + a[0][2] * (a[1][0] * a[2][1] - a[1][1] * a[2][0])
     )
 
+    return det
+
+
+# ==========================================
+# 7. MATRIX INVERSE
+# ==========================================
 
 def inverse_matrix(a):
-    """Calculate matrix inverse using cofactors and determinant."""
 
     det = determinant(a)
 
-    # An inverse does not exist when determinant is zero.
-    if abs(det) < 1e-10:
-        raise ValueError(
-            "This matrix has no inverse because its determinant is zero."
-        )
+    if abs(det) < 0.0000000001:
+        raise ValueError("Inverse does not exist. Determinant is zero.")
 
     cofactors = []
 
-    # Calculate the cofactor matrix.
     for i in range(SIZE):
-        cofactor_row = []
+
+        row = []
 
         for j in range(SIZE):
 
-            # Create a 2x2 minor by removing row i and column j.
-            minor = [
-                [a[r][c] for c in range(SIZE) if c != j]
-                for r in range(SIZE) if r != i
-            ]
+            minor = []
 
-            # Calculate the determinant of the 2x2 minor.
+            for r in range(SIZE):
+
+                if r != i:
+
+                    minor_row = []
+
+                    for c in range(SIZE):
+
+                        if c != j:
+                            minor_row.append(a[r][c])
+
+                    minor.append(minor_row)
+
             minor_det = (
                 minor[0][0] * minor[1][1]
                 - minor[0][1] * minor[1][0]
             )
 
-            # Apply the positive/negative cofactor sign.
-            cofactor_row.append(((-1) ** (i + j)) * minor_det)
+            cofactor = ((-1) ** (i + j)) * minor_det
 
-        cofactors.append(cofactor_row)
+            row.append(cofactor)
 
-    # Transpose the cofactor matrix to get the adjugate.
+        cofactors.append(row)
+
     adjugate = transpose_matrix(cofactors)
 
-    # Divide every adjugate element by the determinant.
-    inverse = [
-        [adjugate[i][j] / det for j in range(SIZE)]
-        for i in range(SIZE)
-    ]
+    inverse = []
+
+    for i in range(SIZE):
+
+        row = []
+
+        for j in range(SIZE):
+
+            row.append(adjugate[i][j] / det)
+
+        inverse.append(row)
 
     return inverse
 
 
-# --------------------------------------------------
-# GUI APPLICATION CLASS
-# --------------------------------------------------
+# ==========================================
+# 8. GUI APPLICATION
+# ==========================================
 
 class MatrixApp:
 
@@ -162,26 +230,23 @@ class MatrixApp:
 
         self.root.title("3x3 Matrix Operations - Without NumPy")
         self.root.geometry("850x650")
-        self.root.minsize(760, 600)
 
-        # Main heading.
-        title = ttk.Label(
+        # Main heading
+        ttk.Label(
             root,
             text="3x3 Matrix Operations",
             font=("Arial", 20, "bold")
-        )
-        title.pack(pady=(12, 2))
+        ).pack(pady=10)
 
         ttk.Label(
             root,
             text="Pure Python Version (Without NumPy)"
-        ).pack(pady=(0, 12))
+        ).pack()
 
-        # Frame containing both matrices.
+        # Matrix input section
         matrices_frame = ttk.Frame(root, padding=10)
         matrices_frame.pack()
 
-        # Create Matrix A and Matrix B input grids.
         self.entries_a = self.create_matrix_input(
             matrices_frame, "Matrix A", 0
         )
@@ -190,15 +255,15 @@ class MatrixApp:
             matrices_frame, "Matrix B", 1
         )
 
-        # Operations section.
+        # Operation buttons
         operations = ttk.LabelFrame(
             root,
             text="Choose an Operation",
             padding=10
         )
+
         operations.pack(fill="x", padx=20, pady=10)
 
-        # Create operation buttons.
         buttons = [
             ("A + B", self.add),
             ("A - B", self.subtract),
@@ -222,52 +287,48 @@ class MatrixApp:
                 sticky="ew"
             )
 
-        # Make operation button columns expand equally.
-        for column in range(3):
-            operations.columnconfigure(column, weight=1)
-
-        # Result section.
+        # Result section
         result_frame = ttk.LabelFrame(
             root,
             text="Result",
             padding=10
         )
+
         result_frame.pack(
             fill="both",
             expand=True,
             padx=20,
-            pady=(0, 15)
+            pady=10
         )
 
         self.result = tk.Text(
             result_frame,
             height=8,
-            font=("Consolas", 12),
-            wrap="none"
+            font=("Consolas", 12)
         )
 
         self.result.pack(fill="both", expand=True)
 
         self.result.insert(
             "1.0",
-            "Enter matrix values and choose an operation."
+            "Enter matrix values and select an operation."
         )
 
         self.result.config(state="disabled")
 
-        # Clear button.
+        # Clear button
         ttk.Button(
             root,
             text="Clear All",
             command=self.clear_all
-        ).pack(pady=(0, 12))
+        ).pack(pady=10)
 
-    # --------------------------------------------------
-    # CREATE MATRIX INPUT GRID
-    # --------------------------------------------------
+
+    # ======================================
+    # CREATE MATRIX INPUT BOXES
+    # ======================================
 
     def create_matrix_input(self, parent, title, column):
-        """Create a 3x3 grid of input fields."""
 
         frame = ttk.LabelFrame(
             parent,
@@ -275,12 +336,7 @@ class MatrixApp:
             padding=10
         )
 
-        frame.grid(
-            row=0,
-            column=column,
-            padx=12,
-            sticky="n"
-        )
+        frame.grid(row=0, column=column, padx=12)
 
         entries = []
 
@@ -296,16 +352,13 @@ class MatrixApp:
                     justify="center"
                 )
 
-                entry.grid(
-                    row=i,
-                    column=j,
-                    padx=4,
-                    pady=4,
-                    ipady=5
-                )
+                entry.grid(row=i, column=j, padx=4, pady=4)
 
-                # Insert identity matrix as default example.
-                entry.insert(0, "1" if i == j else "0")
+                # Default identity matrix
+                if i == j:
+                    entry.insert(0, "1")
+                else:
+                    entry.insert(0, "0")
 
                 row_entries.append(entry)
 
@@ -313,26 +366,23 @@ class MatrixApp:
 
         return entries
 
-    # --------------------------------------------------
+
+    # ======================================
     # GET MATRIX VALUES
-    # --------------------------------------------------
+    # ======================================
 
     def get_a(self):
-        """Get Matrix A values."""
-
         return read_matrix(self.entries_a)
 
     def get_b(self):
-        """Get Matrix B values."""
-
         return read_matrix(self.entries_b)
 
-    # --------------------------------------------------
-    # DISPLAY RESULT
-    # --------------------------------------------------
 
-    def display_result(self, value, heading="Result"):
-        """Display calculated matrix or single numeric result."""
+    # ======================================
+    # DISPLAY RESULT
+    # ======================================
+
+    def display_result(self, value, heading):
 
         self.result.config(state="normal")
 
@@ -344,127 +394,108 @@ class MatrixApp:
 
             for row in value:
 
-                self.result.insert(
-                    tk.END,
-                    "   ".join(
-                        f"{number:10.4f}" for number in row
-                    ) + "\n"
-                )
+                for number in row:
+
+                    self.result.insert(
+                        tk.END,
+                        f"{number:10.4f} "
+                    )
+
+                self.result.insert(tk.END, "\n")
 
         else:
 
             self.result.insert(
                 tk.END,
-                f"{value:.6g}\n"
+                str(round(value, 6))
             )
 
         self.result.config(state="disabled")
 
-    # --------------------------------------------------
-    # COMMON OPERATION HANDLER
-    # --------------------------------------------------
 
-    def run_operation(self, operation, needs_b=False):
-        """
-        Execute the selected operation.
+    # ======================================
+    # HANDLE TWO MATRIX OPERATIONS
+    # ======================================
 
-        needs_b=True means the operation requires both matrices.
-        needs_b=False means only Matrix A is required.
-        """
+    def run_two_matrix_operation(self, operation, heading):
 
         try:
 
-            # Read Matrix A.
             a = self.get_a()
+            b = self.get_b()
 
-            if needs_b:
+            result = operation(a, b)
 
-                # Read Matrix B for two-matrix operations.
-                b = self.get_b()
-
-                result, heading = operation(a, b)
-
-            else:
-
-                # Perform single-matrix operation.
-                result, heading = operation(a)
-
-            # Display the result.
             self.display_result(result, heading)
 
         except ValueError as error:
 
-            messagebox.showerror(
-                "Input / Calculation Error",
-                str(error)
-            )
+            messagebox.showerror("Error", str(error))
 
-        except Exception as error:
 
-            messagebox.showerror(
-                "Error",
-                str(error)
-            )
+    # ======================================
+    # HANDLE ONE MATRIX OPERATIONS
+    # ======================================
 
-    # --------------------------------------------------
-    # OPERATION BUTTON METHODS
-    # --------------------------------------------------
+    def run_one_matrix_operation(self, operation, heading):
+
+        try:
+
+            a = self.get_a()
+
+            result = operation(a)
+
+            self.display_result(result, heading)
+
+        except ValueError as error:
+
+            messagebox.showerror("Error", str(error))
+
+
+    # ======================================
+    # OPERATION BUTTON FUNCTIONS
+    # ======================================
 
     def add(self):
-        """Perform matrix addition."""
-
-        self.run_operation(
-            lambda a, b: (add_matrices(a, b), "A + B"),
-            needs_b=True
+        self.run_two_matrix_operation(
+            add_matrices, "A + B"
         )
 
     def subtract(self):
-        """Perform matrix subtraction."""
-
-        self.run_operation(
-            lambda a, b: (subtract_matrices(a, b), "A - B"),
-            needs_b=True
+        self.run_two_matrix_operation(
+            subtract_matrices, "A - B"
         )
 
     def multiply(self):
-        """Perform standard matrix multiplication."""
-
-        self.run_operation(
-            lambda a, b: (multiply_matrices(a, b), "A x B"),
-            needs_b=True
+        self.run_two_matrix_operation(
+            multiply_matrices, "A x B"
         )
 
     def transpose(self):
-        """Calculate transpose of Matrix A."""
-
-        self.run_operation(
-            lambda a: (transpose_matrix(a), "Transpose of A")
+        self.run_one_matrix_operation(
+            transpose_matrix, "Transpose of A"
         )
 
     def show_determinant(self):
-        """Calculate determinant of Matrix A."""
-
-        self.run_operation(
-            lambda a: (determinant(a), "Determinant of A")
+        self.run_one_matrix_operation(
+            determinant, "Determinant of A"
         )
 
     def inverse(self):
-        """Calculate inverse of Matrix A."""
-
-        self.run_operation(
-            lambda a: (inverse_matrix(a), "Inverse of A")
+        self.run_one_matrix_operation(
+            inverse_matrix, "Inverse of A"
         )
 
-    # --------------------------------------------------
+
+    # ======================================
     # CLEAR ALL INPUTS
-    # --------------------------------------------------
+    # ======================================
 
     def clear_all(self):
-        """Clear both matrices and the result area."""
 
-        for matrix_entries in (self.entries_a, self.entries_b):
+        for matrix in (self.entries_a, self.entries_b):
 
-            for row in matrix_entries:
+            for row in matrix:
 
                 for entry in row:
 
@@ -474,25 +505,19 @@ class MatrixApp:
 
         self.result.delete("1.0", tk.END)
 
-        self.result.insert(
-            "1.0",
-            "All fields cleared."
-        )
+        self.result.insert("1.0", "All fields cleared.")
 
         self.result.config(state="disabled")
 
 
-# --------------------------------------------------
+# ==========================================
 # MAIN PROGRAM
-# --------------------------------------------------
+# ==========================================
 
 if __name__ == "__main__":
 
-    # Create the main Tkinter window.
     window = tk.Tk()
 
-    # Initialize the MatrixApp class.
     app = MatrixApp(window)
 
-    # Start the GUI event loop.
     window.mainloop()
